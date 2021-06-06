@@ -77,11 +77,51 @@ loadData().then(data => {
     });
 
     function updateBar(){
-        return;
+
+        let regions = new Set();
+
+        data.forEach(function(d) {
+            regions.add(d.region);
+            d.m = +d[param][year];
+        });
+
+        data.forEach(function(d) {
+            regions.forEach(function(r) {
+                if (d.region === r) {
+                    d[r] = +d[param][year];
+                }
+            })
+        });
+
+        let mean_values = [];
+        regions.forEach(function(r) {
+            let mean = d3.mean(data, function(d) { return d[r]; });
+            mean_values.push([r, mean]);
+        });
+
+        console.log(mean_values);
+
+        addAxesBarChart(regions, mean_values);
+
+        barChart.selectAll('rect').remove();
+        barChart.selectAll('rect').data(mean_values).enter().append('rect')
+            .attr('x', d => xBar(d[0]))
+            .attr('y', d => yBar(d[1]) - margin)
+            .attr('width', xBar.bandwidth())
+            .attr('height',  d => height - yBar(d[1]))
+            .attr('fill', d => colorScale(d[0]));
+    }
+
+    function addAxesBarChart(regions, mean_values){
+        xBar.domain(Array.from(regions));
+        xBarAxis.call(d3.axisBottom(xBar));
+
+        yBar.domain([0, d3.max(mean_values, function(d) { return d[1]; })]);
+        yBarAxis.call(d3.axisLeft(yBar));
     }
 
     function updateScatterPlot(){
-        addAxes();
+        addAxesScatterPlot();
 
         scatterPlot.selectAll('circle').remove();
 
@@ -93,7 +133,7 @@ loadData().then(data => {
                 .attr('region', d => (d.region));
     }
 
-    function addAxes(){
+    function addAxesScatterPlot(){
         data.forEach(function(d) {
             d.x = +d[xParam][year];
             d.y = +d[yParam][year];
