@@ -52,23 +52,23 @@ loadData().then(data => {
     d3.select('#range').on('change', function(){ 
         year = d3.select(this).property('value');
         yearLable.html(year);
-        updateScattePlot();
+        updateScatterPlot();
         updateBar();
     });
 
     d3.select('#radius').on('change', function(){ 
         rParam = d3.select(this).property('value');
-        updateScattePlot();
+        updateScatterPlot();
     });
 
     d3.select('#x').on('change', function(){ 
         xParam = d3.select(this).property('value');
-        updateScattePlot();
+        updateScatterPlot();
     });
 
     d3.select('#y').on('change', function(){ 
         yParam = d3.select(this).property('value');
-        updateScattePlot();
+        updateScatterPlot();
     });
 
     d3.select('#param').on('change', function(){ 
@@ -80,12 +80,45 @@ loadData().then(data => {
         return;
     }
 
-    function updateScattePlot(){
-        return;
+    function updateScatterPlot(){
+        addAxes();
+
+        scatterPlot.selectAll('circle').remove();
+
+        scatterPlot.selectAll('circle').data(data).enter().append('circle')
+                .attr('cx', d => x(d[xParam][year]))
+                .attr('cy', d => y(d[yParam][year]))
+                .attr('r', d => radiusScale(d[rParam][year]))
+                .attr('fill', d => colorScale(d.region))
+                .attr('region', d => (d.region));
+    }
+
+    function addAxes(){
+        data.forEach(function(d) {
+            d.x = +d[xParam][year];
+            d.y = +d[yParam][year];
+            d.r = +d[rParam][year];
+        });
+
+        let xMax = d3.max(data, function(d) { return d.x; });
+        let xMin = d3.min(data, function(d) { return d.x; });
+
+        let yMax = d3.max(data, function(d) { return d.y; });
+        let yMin = d3.min(data, function(d) { return d.y; });
+
+        let rMax = d3.max(data, function(d) { return d.r; });
+        let rMin = d3.min(data, function(d) { return d.r; });
+
+        x.domain([xMin, xMax]);
+        y.domain([yMin, yMax]);
+        radiusScale.domain([rMin, rMax]);
+
+        xAxis.call(d3.axisBottom(x));
+        yAxis.call(d3.axisLeft(y));
     }
 
     updateBar();
-    updateScattePlot();
+    updateScatterPlot();
 });
 
 
