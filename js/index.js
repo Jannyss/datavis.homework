@@ -119,7 +119,7 @@ loadData().then(data => {
                     barChart.selectAll('rect').attr('opacity',  middleOpacity);
                     d3.select(this).attr('opacity', maxOpacity);
                     scatterPlot.selectAll('circle').style('opacity', minOpacity);
-                    scatterPlot.selectAll('circle').filter(d  =>  d[0]  ===  data.region)
+                    scatterPlot.selectAll('circle').filter(d  =>  d.region  ===  data[0])
                         .style('opacity',  bubbleOpacity);
                     highlighted = this;
                 }
