@@ -45,6 +45,12 @@ const yBarAxis = barChart.append('g').attr('transform', `translate(${margin*2}, 
 const colorScale = d3.scaleOrdinal().range(['#DD4949', '#39CDA1', '#FD710C', '#A14BE5']);
 const radiusScale = d3.scaleSqrt().range([10, 30]);
 
+const maxOpacity = 1;
+const middleOpacity = 0.5;
+const minOpacity = 0;
+const bubbleOpacity = 0.7;
+
+
 loadData().then(data => {
 
     colorScale.domain(d3.set(data.map(d=>d.region)).values());
@@ -99,8 +105,6 @@ loadData().then(data => {
             mean_values.push([r, mean]);
         });
 
-        console.log(mean_values);
-
         addAxesBarChart(regions, mean_values);
 
         barChart.selectAll('rect').remove();
@@ -109,7 +113,22 @@ loadData().then(data => {
             .attr('y', d => yBar(d[1]) - margin)
             .attr('width', xBar.bandwidth())
             .attr('height',  d => height - yBar(d[1]))
-            .attr('fill', d => colorScale(d[0]));
+            .attr('fill', d => colorScale(d[0]))
+            .on('click', function(data) {
+                if (highlighted !== this) {
+                    barChart.selectAll('rect').attr('opacity',  middleOpacity);
+                    d3.select(this).attr('opacity', maxOpacity);
+                    scatterPlot.selectAll('circle').style('opacity', minOpacity);
+                    scatterPlot.selectAll('circle').filter(d  =>  d[0]  ===  data.region)
+                        .style('opacity',  bubbleOpacity);
+                    highlighted = this;
+                }
+                else {
+                    barChart.selectAll('rect').attr('opacity',  maxOpacity);
+                    scatterPlot.selectAll('circle').style('opacity', bubbleOpacity);
+                    highlighted = '';
+                }
+            });
     }
 
     function addAxesBarChart(regions, mean_values){
