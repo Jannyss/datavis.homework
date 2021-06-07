@@ -50,6 +50,9 @@ const middleOpacity = 0.5;
 const minOpacity = 0;
 const bubbleOpacity = 0.7;
 
+const minStrokeWidth = 1;
+const maxStrokeWidth = 2;
+
 
 loadData().then(data => {
 
@@ -149,7 +152,17 @@ loadData().then(data => {
                 .attr('cy', d => y(d[yParam][year]))
                 .attr('r', d => radiusScale(d[rParam][year]))
                 .attr('fill', d => colorScale(d.region))
-                .attr('region', d => (d.region));
+                .attr('region', d => (d.region))
+                .on('click', function(){
+                    if (selected !== this) {
+                        scatterPlot.selectAll('circle').attr('stroke-width',  minStrokeWidth);
+                        d3.select(this).attr('stroke-width',  maxStrokeWidth).raise();
+                        selected = this;
+                    }
+                    else {
+                        selected = '';
+                    }
+                });
     }
 
     function addAxesScatterPlot(){
