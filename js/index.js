@@ -51,7 +51,7 @@ const minOpacity = 0;
 const bubbleOpacity = 0.7;
 
 const minStrokeWidth = 1;
-const maxStrokeWidth = 2;
+const maxStrokeWidth = 3;
 
 
 loadData().then(data => {
@@ -83,6 +83,11 @@ loadData().then(data => {
     d3.select('#param').on('change', function(){ 
         param = d3.select(this).property('value');
         updateBar();
+    });
+
+    d3.select('#lineParam').on('change', function(){
+        lineParam = d3.select(this).property('value');
+        updateLineChart();
     });
 
     function updateBar(){
@@ -153,11 +158,13 @@ loadData().then(data => {
                 .attr('r', d => radiusScale(d[rParam][year]))
                 .attr('fill', d => colorScale(d.region))
                 .attr('region', d => (d.region))
-                .on('click', function(){
+                .on('click', function(data){
                     if (selected !== this) {
                         scatterPlot.selectAll('circle').attr('stroke-width',  minStrokeWidth);
                         d3.select(this).attr('stroke-width',  maxStrokeWidth).raise();
-                        selected = this;
+                        selected = data.country;
+                        countryName.html(selected);
+                        updateLineChart();
                     }
                     else {
                         selected = '';
@@ -187,6 +194,46 @@ loadData().then(data => {
 
         xAxis.call(d3.axisBottom(x));
         yAxis.call(d3.axisLeft(y));
+    }
+
+    function updateLineChart(){
+
+        let years = d3.range(1800, 2021, 1);
+
+        let  countryInfo  =  data.find(country  =>  country.country  ===  selected);
+        let values = [];
+        let lineData = [];
+        Object.values(countryInfo[lineParam]).slice(0,221).forEach(function(d, i) {
+            values.push(Number.parseInt(d));
+            lineData.push([Number.parseInt(years[i]), Number.parseInt(d)])
+        });
+
+        addAxesLineChart(values);
+
+        d3.selectAll('#lines')
+            .attr('display',  'none');
+
+        lineChart.append('path')
+            .datum(lineData)
+            .attr('stroke',  'steelblue')
+            .attr('stroke-width',  2)
+            .attr('id',  'lines')
+            .attr('fill',  'none')
+            .attr('d',  d3.line()
+                .defined(d  =>  !isNaN(d[1]))
+                .x(d  =>  x(d[0]))
+                .y(d  =>  y(d[1])));
+    }
+
+    function addAxesLineChart(values){
+        let lineMax = d3.max(values);
+        let lineMin = d3.min(values);
+
+        x.domain([1800, 2020]);
+        y.domain([lineMin, lineMax]);
+
+        xLineAxis.call(d3.axisBottom(x));
+        yLineAxis.call(d3.axisLeft(y));
     }
 
     updateBar();
